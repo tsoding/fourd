@@ -137,12 +137,18 @@ fn main() -> Result<(), String> {
         .resizable()
         .build()
         .map_err(|e| e.to_string())?;
+    let mut timer_subsystem = sdl_context.timer()?;
 
-    let mut canvas = window.into_canvas().build().map_err(|e| e.to_string())?;
+    let mut canvas = window
+        .into_canvas()
+        .present_vsync()
+        .build()
+        .map_err(|e| e.to_string())?;
     let mut event_pump = sdl_context.event_pump()?;
 
     let mut theta: f64 = 0.0;
     'running: loop {
+        let begin = timer_subsystem.ticks();
         for event in event_pump.poll_iter() {
             match event {
                 Event::Quit {..} => {
@@ -210,9 +216,10 @@ fn main() -> Result<(), String> {
                 }
             }
         }
-        theta += 0.005;
-
         canvas.present();
+
+        let dt = 1.0 / (timer_subsystem.ticks() - begin) as f64;
+        theta += 0.5 * dt;
     }
 
     Ok(())
