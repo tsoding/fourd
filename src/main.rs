@@ -1,6 +1,6 @@
 use sdl2::pixels::Color;
 use sdl2::event::Event;
-use sdl2::rect::Rect;
+use sdl2::rect::{Rect, Point};
 
 const BACKGROUND: Color = Color::RGB(18, 18, 18);
 const FOREGROUND: Color = Color::RGB(255, 150, 150);
@@ -59,23 +59,42 @@ fn main() -> Result<(), String> {
         const high_range: f64 = 1.0;
         const SIZE: f64 = 10.0;
         const N: u32 = 5;
+        const D: usize = 3;
         const ds: f64 = (high_range - low_range) / (N - 1) as f64;
         for ix in 0..N {
             for iy in 0..N {
                 for iz in 0..N {
-                    let r = h as f64 / w as f64;
-                    let x: f64 = low_range + ix as f64 * ds;
-                    let y: f64 = low_range + iy as f64 * ds;
-                    let z: f64 = low_range + iz as f64 * ds;
-                    let p = to_screen(project(translate(rotate_y([x, y, z], theta), [0.0, 0.0, DISTANCE]), r),
-                                      w as f64, h as f64);
-                    let rect = Rect::new(
-                        f64::floor(p[0] - SIZE * 0.5) as i32,
-                        f64::floor(p[1] - SIZE * 0.5) as i32,
-                        f64::floor(SIZE) as u32,
-                        f64::floor(SIZE) as u32);
-                    canvas.set_draw_color(FOREGROUND);
-                    canvas.fill_rect(rect);
+                    let p1 = [low_range + ix as f64 * ds,
+                              low_range + iy as f64 * ds,
+                              low_range + iz as f64 * ds];
+
+                    for id in 0..D {
+                        let p2 = {
+                            let mut t = p1.clone();
+                            t[id] += ds;
+                            t
+                        };
+
+                        if (p2[id] <= high_range) {
+                            let r = h as f64 / w as f64;
+                            let ps1 = to_screen(
+                                project(
+                                    translate(
+                                        rotate_y(p1, theta),
+                                        [0.0, 0.0, DISTANCE]), r),
+                                w as f64, h as f64);
+                            let ps2 = to_screen(
+                                project(
+                                    translate(
+                                        rotate_y(p2, theta),
+                                        [0.0, 0.0, DISTANCE]), r),
+                                w as f64, h as f64);
+
+                            canvas.set_draw_color(FOREGROUND);
+                            canvas.draw_line(Point::new(ps1[0] as i32, ps1[1] as i32),
+                                             Point::new(ps2[0] as i32, ps2[1] as i32))?;
+                        }
+                    }
                 }
             }
         }
