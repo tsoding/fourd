@@ -218,8 +218,8 @@ fn main() -> Result<(), String> {
         }
         canvas.present();
 
-        let dt = 1.0 / (timer_subsystem.ticks() - begin) as f64;
-        theta += 0.5 * dt;
+        let dt = (timer_subsystem.ticks() - begin) as f64 / 1000.0;
+        theta = (theta + 2.0 * dt) % (2.0 * std::f64::consts::PI);
     }
 
     Ok(())
