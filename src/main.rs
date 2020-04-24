@@ -8,7 +8,7 @@ type Mat4x4 = [Vec4; 4];
 
 const BACKGROUND: Color = Color::RGB(18, 18, 18);
 const FOREGROUND: Color = Color::RGB(255, 150, 150);
-const DISTANCE: f64 = 4.0;
+const DISTANCE: f64 = 5.0;
 
 fn dot_4d_vv(v1: Vec4, v2: Vec4) -> f64 {
     let mut result = 0.0;
@@ -58,8 +58,8 @@ fn project_4d_to_3d_persp([x, y, z, u]: Vec4) -> Vec3 {
     return [x / u, y / u, z / u];
 }
 
-fn project_4d_to_3d_ortho([x, y, z, _]: Vec4) -> Vec3 {
-    return [x, y, z];
+fn project_4d_to_3d_ortho([x, y, z, u]: Vec4) -> Vec3 {
+    return [x, y, z + u];
 }
 
 fn to_screen([x0, y0]: [f64; 2], w: f64, h: f64) -> [f64; 2] {
@@ -99,6 +99,15 @@ fn rotmat_4d_xz(theta: f64) -> Mat4x4 {
         [0.0             , 1.0, 0.0, 0.0],
         [f64::sin(theta) , 0.0, f64::cos(theta), 0.0],
         [0.0             , 0.0, 0.0, 1.0],
+    ]
+}
+
+fn rotmat_4d_xu(theta: f64) -> Mat4x4 {
+    [
+        [f64::cos(theta), 0.0, 0.0, f64::sin(theta)],
+        [0.0, 1.0, 0.0, 0.0],
+        [0.0, 0.0, 1.0, 0.0],
+        [-f64::sin(theta), 0.0, 0.0, f64::cos(theta)],
     ]
 }
 
@@ -174,11 +183,11 @@ fn main() -> Result<(), String> {
                                 let r = h as f64 / w as f64;
                                 let rotmat =
                                     dot_4d_mm(
-                                        rotmat_4d_xz(theta),
+                                        rotmat_4d_xz(-0.5),
                                         rotmat_4d_zu(theta));
                                 let ps1 = to_screen(
                                     project_3d_to_2d_persp(
-                                        project_4d_to_3d_persp(
+                                        project_4d_to_3d_ortho(
                                             translate_4d(
                                                 dot_4d_mv(rotmat, p1),
                                                 [0.0, 0.0, DISTANCE, 0.0])),
@@ -186,7 +195,7 @@ fn main() -> Result<(), String> {
                                     w as f64, h as f64);
                                 let ps2 = to_screen(
                                     project_3d_to_2d_persp(
-                                        project_4d_to_3d_persp(
+                                        project_4d_to_3d_ortho(
                                             translate_4d(
                                                 dot_4d_mv(rotmat, p2),
                                                 [0.0, 0.0, DISTANCE, 0.0])), r),
