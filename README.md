@@ -4,6 +4,7 @@ A simple exercise in 4D shapes rendering.
 
 ![](./demo.gif)
 
+The exercise was made on stream. Recording of the stream: https://www.twitch.tv/videos/604944541
 
 # Quick Start
 
